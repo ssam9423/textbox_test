@@ -78,38 +78,38 @@ class Textbox:
         self.rect = pygame.Rect(tb_x_pos, self.y_pos, tb_width, tb_height)
         self.textinput = pyti.TextInputVisualizer()
         self.textinput.manager = tb_manager
-        self.textinput.cursor_visible = False
         self.textinput.cursor_width = 4
         self.textinput.font_color = text_color
         self.textinput.font_object = large_font
         self.value = ''
         self.on = True
     
-    def draw(self):
+    def tb_box_draw(self):
         pygame.draw.rect(screen, self.bg_color, self.rect, border_radius=fc_radius)
-
-    def empty_draw(self):
-        pygame.draw.rect(screen, self.bg_color, self.rect, border_radius=fc_radius)
-        screen.blit(large_font.render(self.name, 1, bg_color), 
-                    (tb_font_x_pos, self.font_y_pos))
-        
-    def tb_box_show(self):
-        if self.textinput.value == '' and self.value == '':
-            self.empty_draw()
-        else:
-            self.draw()
 
     def tb_text_show(self):
         if self.on:
             screen.blit(self.textinput.surface, 
                         (tb_font_x_pos, self.font_y_pos))
         else:
-            screen.blit(large_font.render(self.value, 1, text_color), 
-                        (tb_font_x_pos, self.font_y_pos))
+            if self.value == '' and self.textinput.value == '':
+                screen.blit(large_font.render(self.name, 1, bg_color), 
+                    (tb_font_x_pos, self.font_y_pos))
+            else:
+                screen.blit(large_font.render(self.value, 1, text_color), 
+                            (tb_font_x_pos, self.font_y_pos))
+                
+    def tb_draw(self):
+        self.tb_box_draw()
+        self.tb_text_show()
             
     def clear(self):
-        self.value = ''
         self.textinput.value = ''
+        self.value = ''
+
+    def value_update(self):
+        if self.textinput.value != '':
+            self.value = self.textinput.value
 
     def tb_click(self, mouse_pos):
         # Click Inside Textbox
@@ -117,15 +117,12 @@ class Textbox:
             if not self.on:
                 self.textinput.value = self.value
                 self.textinput.manager = tb_manager
-                self.textinput.cursor_visible = True
                 self.on = True
         # Click Outside Textbox
         else:
             if self.on:
-                if self.textinput.value != '':
-                    self.value = self.textinput.value
+                self.value_update()
                 self.textinput.manager = stop_type
-                self.textinput.cursor_visible = False
                 self.on = False
 
 # Button Class
@@ -207,22 +204,24 @@ while True:
     for event in events:
         if event.type == pygame.QUIT:
             exit()
-        if event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN:
-            complete(tb_1.textinput.value)
         # Mouse Click Options
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             if conf_b.rect.collidepoint(event.pos):
-                complete(tb_1.textinput.value)
+                tb_1.value_update()
+                complete(tb_1.value)
             if clear_b.rect.collidepoint(event.pos):
                 tb_1.clear()
             # Click inside/outside Textbox 1
             tb_1.tb_click(event.pos)
+        if event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN:
+            tb_1.value_update()
+            complete(tb_1.value)
+        
     # Show Buttons
     conf_b.interact(pygame.mouse.get_pos())
     clear_b.interact(pygame.mouse.get_pos())
     # Show Textbox
-    tb_1.tb_box_show()
-    tb_1.tb_text_show()
+    tb_1.tb_draw()
     # Update Screen
     pygame.display.update()
     clock.tick(30)
