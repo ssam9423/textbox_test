@@ -83,6 +83,7 @@ class Textbox:
         self.textinput.font_object = large_font
         self.value = ''
         self.on = True
+        self.empty = True
     
     def tb_box_draw(self):
         pygame.draw.rect(screen, self.bg_color, self.rect, border_radius=fc_radius)
@@ -106,6 +107,7 @@ class Textbox:
     def clear(self):
         self.textinput.value = ''
         self.value = ''
+        self.empty = True
 
     def value_update(self):
         if self.textinput.value != '':
@@ -117,6 +119,9 @@ class Textbox:
             if not self.on:
                 self.textinput.value = self.value
                 self.textinput.manager = tb_manager
+                # tb_manager holds prior textinput.value
+                if self.value == '':
+                    self.textinput.value = ''
                 self.on = True
         # Click Outside Textbox
         else:
@@ -175,8 +180,8 @@ def complete(user_input):
     while True:
         screen.fill(bg_color)
         text = large_font.render(user_input, 1, text_color)
-        if user_input == '1234':
-            text = large_font.render('You guessed the secret code.', 1, text_color)
+        if user_input == '':
+            text = large_font.render('No Text Was Input.')
         text_width = text.get_size()[0]
         x_center = (s_width - text_width) / 2
         for event in pygame.event.get():
@@ -221,7 +226,9 @@ while True:
     conf_b.interact(pygame.mouse.get_pos())
     clear_b.interact(pygame.mouse.get_pos())
     # Show Textbox
+#    tb_1.tb_box_show()
     tb_1.tb_draw()
     # Update Screen
     pygame.display.update()
     clock.tick(30)
+
